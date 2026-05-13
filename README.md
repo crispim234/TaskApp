@@ -1,83 +1,108 @@
-# TaskApp
+# 📋 TaskApp
 
-Aplicativo mobile de gerenciamento de tarefas desenvolvido com React Native e Expo.
+> Aplicativo mobile de gerenciamento de tarefas — organizado, simples e eficiente.
 
-## Funcionalidades
+![React Native](https://img.shields.io/badge/React_Native-0.81.5-61DAFB?style=flat-square&logo=react)
+![Expo](https://img.shields.io/badge/Expo-54.0-000020?style=flat-square&logo=expo)
+![Supabase](https://img.shields.io/badge/Supabase-2.x-3ECF8E?style=flat-square&logo=supabase)
 
-- Autenticação com e-mail e senha via Supabase
-- Criar, editar e excluir tarefas
-- Categorias: Estudos, Faculdade, Saúde, Trabalho, Pessoal
-- Prioridades: Alta, Média, Baixa
-- Filtros por status (Pendentes / Concluídas) e por categoria
-- Busca por título
-- Tarefas concluídas são removidas automaticamente após 10 segundos
-- Sincronização em tempo real com Supabase
-- Armazenamento local com AsyncStorage (modo offline)
+---
 
-## Tecnologias
+## ✨ Funcionalidades
 
-- [React Native](https://reactnative.dev/)
-- [Expo](https://expo.dev/) ~54.0
-- [Supabase](https://supabase.com/) — autenticação e banco de dados
-- [React Navigation](https://reactnavigation.org/) — navegação por tabs e stack
-- [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) — persistência local
+- 🔐 **Autenticação** — login e cadastro com e-mail e senha
+- ✅ **Tarefas** — criar, editar, concluir e excluir
+- 🏷️ **Categorias** — Estudos, Faculdade, Saúde, Trabalho, Pessoal
+- 🔥 **Prioridades** — Alta, Média e Baixa
+- 🔍 **Busca e filtros** — por título, status e categoria
+- ⏱️ **Auto-remoção** — tarefas concluídas são removidas automaticamente após 10 segundos
+- ☁️ **Sincronização** — dados salvos em tempo real no Supabase
+- 📦 **Offline** — funciona localmente com AsyncStorage
 
-## Pré-requisitos
+---
 
-- Node.js 18+
-- Expo CLI (`npm install -g expo-cli`)
+## 📱 Telas
+
+| Tela | Descrição |
+|------|-----------|
+| Splash | Animação de entrada do app |
+| Login | Autenticação e cadastro |
+| Home | Lista de tarefas com filtros e busca |
+| Nova Tarefa | Formulário com pré-visualização |
+| Detalhes | Visualizar e editar uma tarefa |
+| Configurações | Perfil, progresso e preferências |
+
+---
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Versão | Uso |
+|------------|--------|-----|
+| React Native | 0.81.5 | Framework mobile |
+| Expo | ~54.0 | Toolchain e build |
+| Supabase | ^2.105 | Banco de dados e autenticação |
+| React Navigation | ^6.x | Navegação entre telas |
+| AsyncStorage | 2.2.0 | Persistência local |
+
+---
+
+## 🚀 Como rodar o projeto
+
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/) 18 ou superior
+- [Expo Go](https://expo.dev/go) no celular (para testar)
 - Conta no [Supabase](https://supabase.com/)
 
-## Instalação
+### Passo a passo
 
+**1. Clone o repositório**
 ```bash
-# Clone o repositório
 git clone https://github.com/crispim234/TaskApp.git
 cd TaskApp
+```
 
-# Instale as dependências
+**2. Instale as dependências**
+```bash
 npm install
 ```
 
-## Configuração
+**3. Configure as variáveis de ambiente**
 
-Crie um arquivo `.env` na raiz do projeto com as credenciais do Supabase:
-
+Crie um arquivo `.env` na raiz do projeto:
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon
 ```
 
-## Execução
-
+**4. Inicie o app**
 ```bash
-# Iniciar o servidor de desenvolvimento
 npm start
-
-# Android
-npm run android
-
-# iOS
-npm run ios
-
-# Web
-npm run web
 ```
 
-## Estrutura do Projeto
+Escaneie o QR code com o Expo Go ou rode em um emulador:
+```bash
+npm run android   # Android
+npm run ios       # iOS
+npm run web       # Navegador
+```
+
+---
+
+## 🗂️ Estrutura do Projeto
 
 ```
 TaskApp/
-├── App.js                          # Navegação principal
-├── app.json                        # Configuração Expo
-├── assets/                         # Imagens e ícones
+├── App.js                      # Configuração de navegação
+├── app.json                    # Configuração do Expo
+├── assets/                     # Imagens e ícones
 └── src/
     ├── config/
-    │   └── supabase.js             # Configuração do cliente Supabase
+    │   └── supabase.js         # Cliente Supabase
     ├── context/
-    │   └── TaskContext.js          # Estado global das tarefas
+    │   └── TaskContext.js      # Estado global (tarefas, auth)
     ├── components/
-    │   └── TaskItem.js             # Componente de item da lista
+    │   └── TaskItem.js         # Card de tarefa
     └── screens/
         ├── SplashScreen.js
         ├── LoginScreen.js
@@ -87,17 +112,25 @@ TaskApp/
         └── SettingsScreen.js
 ```
 
-## Banco de Dados (Supabase)
+---
 
-Tabela `tasks`:
+## 🗄️ Banco de Dados
+
+Tabela `tasks` no Supabase:
 
 | Coluna | Tipo | Descrição |
-|---|---|---|
-| id | uuid | Chave primária |
-| user_id | uuid | FK para auth.users |
-| title | text | Título da tarefa |
-| description | text | Descrição opcional |
-| category | text | Categoria |
-| priority | text | Alta / Média / Baixa |
-| status | text | pendente / concluído |
-| created_at | timestamptz | Data de criação |
+|--------|------|-----------|
+| `id` | uuid | Chave primária |
+| `user_id` | uuid | Referência ao usuário |
+| `title` | text | Título da tarefa |
+| `description` | text | Descrição opcional |
+| `category` | text | Categoria |
+| `priority` | text | Alta / Média / Baixa |
+| `status` | text | pendente / concluído |
+| `created_at` | timestamptz | Data de criação |
+
+---
+
+## 📄 Licença
+
+Projeto acadêmico — Desenvolvimento Mobile · 3º Período
