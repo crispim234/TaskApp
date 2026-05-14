@@ -4,18 +4,23 @@ import {
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { useTasks } from '../context/TaskContext';
+import type { AddTaskScreenProps, Priority } from '../types';
 
-const CATEGORIES = ['Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'];
-const PRIORITIES = ['Alta', 'Média', 'Baixa'];
-const PRIORITY_COLORS = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
-const PRIORITY_BG = { Alta: 'rgba(255,71,87,0.15)', Média: 'rgba(255,181,71,0.15)', Baixa: 'rgba(34,197,94,0.15)' };
+const CATEGORIES = ['Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'] as const;
+const PRIORITIES: Priority[] = ['Alta', 'Média', 'Baixa'];
+const PRIORITY_COLORS: Record<Priority, string> = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
+const PRIORITY_BG: Record<Priority, string> = {
+  Alta: 'rgba(255,71,87,0.15)',
+  Média: 'rgba(255,181,71,0.15)',
+  Baixa: 'rgba(34,197,94,0.15)',
+};
 
-export default function AddTaskScreen({ navigation }) {
+export default function AddTaskScreen({ navigation }: AddTaskScreenProps) {
   const { addTask } = useTasks();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Estudos');
-  const [priority, setPriority] = useState('Média');
+  const [category, setCategory] = useState<string>('Estudos');
+  const [priority, setPriority] = useState<Priority>('Média');
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -31,7 +36,6 @@ export default function AddTaskScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -41,7 +45,6 @@ export default function AddTaskScreen({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {/* Title */}
         <View style={styles.field}>
           <Text style={styles.label}>Título <Text style={styles.required}>*</Text></Text>
           <TextInput
@@ -55,7 +58,6 @@ export default function AddTaskScreen({ navigation }) {
           <Text style={styles.counter}>{title.length}/80</Text>
         </View>
 
-        {/* Description */}
         <View style={styles.field}>
           <Text style={styles.label}>Descrição</Text>
           <TextInput
@@ -72,7 +74,6 @@ export default function AddTaskScreen({ navigation }) {
           <Text style={styles.counter}>{description.length}/300</Text>
         </View>
 
-        {/* Category */}
         <View style={styles.field}>
           <Text style={styles.label}>Categoria</Text>
           <View style={styles.optionsRow}>
@@ -88,7 +89,6 @@ export default function AddTaskScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Priority */}
         <View style={styles.field}>
           <Text style={styles.label}>Prioridade</Text>
           <View style={styles.priorityRow}>
@@ -97,10 +97,7 @@ export default function AddTaskScreen({ navigation }) {
                 key={p}
                 style={[
                   styles.priorityChip,
-                  priority === p && {
-                    backgroundColor: PRIORITY_BG[p],
-                    borderColor: PRIORITY_COLORS[p],
-                  },
+                  priority === p && { backgroundColor: PRIORITY_BG[p], borderColor: PRIORITY_COLORS[p] },
                 ]}
                 onPress={() => setPriority(p)}
               >
@@ -111,10 +108,8 @@ export default function AddTaskScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Preview */}
         <View style={styles.field}>
           <Text style={styles.label}>Pré-visualização</Text>
           <View style={styles.previewCard}>
@@ -134,7 +129,6 @@ export default function AddTaskScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Buttons */}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelText}>Cancelar</Text>

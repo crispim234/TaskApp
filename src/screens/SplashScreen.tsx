@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, Image, StyleSheet, Animated } from 'react-native';
+import type { SplashScreenProps } from '../types';
 
-export default function SplashScreen({ navigation }) {
+export default function SplashScreen({ navigation }: SplashScreenProps) {
   const opacity = new Animated.Value(0);
   const scale = new Animated.Value(0.8);
   const glowOpacity = new Animated.Value(0);

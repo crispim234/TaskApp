@@ -1,18 +1,32 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '../config/supabase';
+import type { Task, Settings } from '../types';
 
-function generateUUID() {
+function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
-const TaskContext = createContext();
+interface TaskContextType {
+  tasks: Task[];
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  settings: Settings;
+  addTask: (task: Pick<Task, 'title' | 'description' | 'category' | 'priority'>) => Promise<boolean>;
+  updateTask: (task: Task) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  toggleStatus: (id: string) => Promise<void>;
+  updateSettings: (newSettings: Partial<Settings>) => Promise<void>;
+}
 
-const INITIAL_TASKS = [
+const TaskContext = createContext<TaskContextType>({} as TaskContextType);
+
+const INITIAL_TASKS: Task[] = [
   {
     id: '1',
     title: 'Estudar React Native',
@@ -42,12 +56,12 @@ const INITIAL_TASKS = [
   },
 ];
 
-export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState([]);
-  const [user, setUser] = useState(null);
-  const userRef = useRef(null);
-  const deleteTimers = useRef({});
-  const [settings, setSettings] = useState({
+export function TaskProvider({ children }: { children: ReactNode }) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const userRef = useRef<User | null>(null);
+  const deleteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [settings, setSettings] = useState<Settings>({
     theme: 'light',
     notifications: true,
     sortBy: 'data',
@@ -79,7 +93,7 @@ export function TaskProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function loadTasksFromSupabase(userId) {
+  async function loadTasksFromSupabase(userId: string) {
     try {
       const { data, error } = await supabase
         .from('tasks')
@@ -88,7 +102,7 @@ export function TaskProvider({ children }) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTasks(data || []);
+      setTasks((data as Task[]) ?? []);
     } catch (error) {
       console.error('Erro ao carregar tarefas:', error);
       setTasks([]);
@@ -99,7 +113,7 @@ export function TaskProvider({ children }) {
   async function loadLocalTasks() {
     try {
       const storedTasks = await AsyncStorage.getItem('@tasks');
-      setTasks(storedTasks ? JSON.parse(storedTasks) : INITIAL_TASKS);
+      setTasks(storedTasks ? (JSON.parse(storedTasks) as Task[]) : INITIAL_TASKS);
     } catch {
       setTasks(INITIAL_TASKS);
     }
@@ -109,18 +123,18 @@ export function TaskProvider({ children }) {
   async function loadSettings() {
     try {
       const storedSettings = await AsyncStorage.getItem('@settings');
-      if (storedSettings) setSettings(JSON.parse(storedSettings));
+      if (storedSettings) setSettings(JSON.parse(storedSettings) as Settings);
     } catch {}
   }
 
-  async function saveTasks(newTasks) {
+  async function saveTasks(newTasks: Task[]) {
     setTasks(newTasks);
     await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks));
   }
 
-  async function addTask(task) {
+  async function addTask(task: Pick<Task, 'title' | 'description' | 'category' | 'priority'>): Promise<boolean> {
     const currentUser = userRef.current;
-    const newTask = {
+    const newTask: Task = {
       ...task,
       id: generateUUID(),
       status: 'pendente',
@@ -128,18 +142,16 @@ export function TaskProvider({ children }) {
     };
 
     if (currentUser) {
-      const { error } = await supabase
-        .from('tasks')
-        .insert([{
-          id: newTask.id,
-          title: newTask.title,
-          description: newTask.description || null,
-          category: newTask.category,
-          priority: newTask.priority,
-          status: newTask.status,
-          user_id: currentUser.id,
-          created_at: newTask.createdAt,
-        }]);
+      const { error } = await supabase.from('tasks').insert([{
+        id: newTask.id,
+        title: newTask.title,
+        description: newTask.description ?? null,
+        category: newTask.category,
+        priority: newTask.priority,
+        status: newTask.status,
+        user_id: currentUser.id,
+        created_at: newTask.createdAt,
+      }]);
 
       if (error) {
         Alert.alert('Erro ao salvar tarefa', error.message);
@@ -154,7 +166,7 @@ export function TaskProvider({ children }) {
     return true;
   }
 
-  async function updateTask(updatedTask) {
+  async function updateTask(updatedTask: Task) {
     if (user) {
       try {
         const { error } = await supabase
@@ -178,7 +190,7 @@ export function TaskProvider({ children }) {
     saveTasks(tasks.map(t => (t.id === updatedTask.id ? updatedTask : t)));
   }
 
-  async function deleteTask(id) {
+  async function deleteTask(id: string) {
     if (userRef.current) {
       try {
         const { error } = await supabase
@@ -200,9 +212,9 @@ export function TaskProvider({ children }) {
     });
   }
 
-  async function toggleStatus(id) {
+  async function toggleStatus(id: string) {
     const task = tasks.find(t => t.id === id);
-    const newStatus = task?.status === 'concluído' ? 'pendente' : 'concluído';
+    const newStatus: Task['status'] = task?.status === 'concluído' ? 'pendente' : 'concluído';
 
     if (deleteTimers.current[id]) {
       clearTimeout(deleteTimers.current[id]);
@@ -223,13 +235,7 @@ export function TaskProvider({ children }) {
       }
     }
 
-    saveTasks(
-      tasks.map(t =>
-        t.id === id
-          ? { ...t, status: newStatus }
-          : t
-      )
-    );
+    saveTasks(tasks.map(t => (t.id === id ? { ...t, status: newStatus } : t)));
 
     if (newStatus === 'concluído') {
       deleteTimers.current[id] = setTimeout(() => {
@@ -239,7 +245,7 @@ export function TaskProvider({ children }) {
     }
   }
 
-  async function updateSettings(newSettings) {
+  async function updateSettings(newSettings: Partial<Settings>) {
     const merged = { ...settings, ...newSettings };
     setSettings(merged);
     await AsyncStorage.setItem('@settings', JSON.stringify(merged));
@@ -254,6 +260,6 @@ export function TaskProvider({ children }) {
   );
 }
 
-export function useTasks() {
+export function useTasks(): TaskContextType {
   return useContext(TaskContext);
 }

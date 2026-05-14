@@ -6,10 +6,40 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTasks } from '../context/TaskContext';
 import { supabase } from '../config/supabase';
+import type { SettingsScreenProps } from '../types';
 
 const VERSION = '1.0.0';
 
-export default function SettingsScreen({ navigation }) {
+interface SettingRowProps {
+  icon: string;
+  title: string;
+  subtitle?: string;
+  right?: React.ReactNode;
+  onPress?: () => void;
+  danger?: boolean;
+}
+
+function SettingRow({ icon, title, subtitle, right, onPress, danger }: SettingRowProps) {
+  return (
+    <TouchableOpacity
+      style={styles.row}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+      disabled={!onPress}
+    >
+      <View style={[styles.rowIcon, danger && styles.rowIconDanger]}>
+        <Text style={styles.rowIconText}>{icon}</Text>
+      </View>
+      <View style={styles.rowContent}>
+        <Text style={[styles.rowTitle, danger && styles.rowTitleDanger]}>{title}</Text>
+        {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {right && <View style={styles.rowRight}>{right}</View>}
+    </TouchableOpacity>
+  );
+}
+
+export default function SettingsScreen({ navigation }: SettingsScreenProps) {
   const { user, setUser, settings, updateSettings, tasks } = useTasks();
 
   const pending = tasks.filter(t => t.status === 'pendente').length;
@@ -45,32 +75,11 @@ export default function SettingsScreen({ navigation }) {
     );
   }
 
-  function SettingRow({ icon, title, subtitle, right, onPress, danger }) {
-    return (
-      <TouchableOpacity
-        style={styles.row}
-        onPress={onPress}
-        activeOpacity={onPress ? 0.7 : 1}
-        disabled={!onPress}
-      >
-        <View style={[styles.rowIcon, danger && styles.rowIconDanger]}>
-          <Text style={styles.rowIconText}>{icon}</Text>
-        </View>
-        <View style={styles.rowContent}>
-          <Text style={[styles.rowTitle, danger && styles.rowTitleDanger]}>{title}</Text>
-          {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
-        </View>
-        {right && <View style={styles.rowRight}>{right}</View>}
-      </TouchableOpacity>
-    );
-  }
-
-  const userName = user?.user_metadata?.name || user?.name || 'Usuário';
-  const userEmail = user?.email || 'sem e-mail';
+  const userName = user?.user_metadata?.name ?? 'Usuário';
+  const userEmail = user?.email ?? 'sem e-mail';
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Profile Card */}
       <View style={styles.profileCard}>
         <Image source={require('../../assets/avatar.png')} style={styles.profileAvatar} />
         <View style={styles.profileInfo}>
@@ -83,7 +92,6 @@ export default function SettingsScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Progress */}
       <View style={styles.progressCard}>
         <View style={styles.progressHeader}>
           <Text style={styles.progressLabel}>Progresso geral</Text>
@@ -95,7 +103,6 @@ export default function SettingsScreen({ navigation }) {
         <Text style={styles.progressSub}>{done} de {tasks.length} tarefas concluídas</Text>
       </View>
 
-      {/* Stats */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{tasks.length}</Text>
@@ -111,7 +118,6 @@ export default function SettingsScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Preferences */}
       <Text style={styles.sectionTitle}>Preferências</Text>
       <View style={styles.section}>
         <SettingRow
@@ -137,7 +143,6 @@ export default function SettingsScreen({ navigation }) {
         />
       </View>
 
-      {/* About */}
       <Text style={styles.sectionTitle}>Sobre o App</Text>
       <View style={styles.section}>
         <SettingRow icon="📱" title="Versão" subtitle={VERSION} />
@@ -147,7 +152,6 @@ export default function SettingsScreen({ navigation }) {
         <SettingRow icon="🎓" title="Disciplina" subtitle="Desenvolvimento Mobile — 3º Período" />
       </View>
 
-      {/* Danger Zone */}
       <Text style={styles.sectionTitle}>Zona de Perigo</Text>
       <View style={styles.section}>
         <SettingRow

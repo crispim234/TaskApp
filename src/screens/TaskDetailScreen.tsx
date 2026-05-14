@@ -4,13 +4,18 @@ import {
   StyleSheet, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useTasks } from '../context/TaskContext';
+import type { TaskDetailScreenProps, Priority } from '../types';
 
-const CATEGORIES = ['Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'];
-const PRIORITIES = ['Alta', 'Média', 'Baixa'];
-const PRIORITY_COLORS = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
-const PRIORITY_BG = { Alta: 'rgba(255,71,87,0.15)', Média: 'rgba(255,181,71,0.15)', Baixa: 'rgba(34,197,94,0.15)' };
+const CATEGORIES = ['Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'] as const;
+const PRIORITIES: Priority[] = ['Alta', 'Média', 'Baixa'];
+const PRIORITY_COLORS: Record<Priority, string> = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
+const PRIORITY_BG: Record<Priority, string> = {
+  Alta: 'rgba(255,71,87,0.15)',
+  Média: 'rgba(255,181,71,0.15)',
+  Baixa: 'rgba(34,197,94,0.15)',
+};
 
-export default function TaskDetailScreen({ navigation, route }) {
+export default function TaskDetailScreen({ navigation, route }: TaskDetailScreenProps) {
   const { taskId } = route.params;
   const { tasks, updateTask, deleteTask, toggleStatus } = useTasks();
   const task = tasks.find(t => t.id === taskId);
@@ -19,12 +24,12 @@ export default function TaskDetailScreen({ navigation, route }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
-  const [priority, setPriority] = useState('');
+  const [priority, setPriority] = useState<Priority>('Média');
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
-      setDescription(task.description || '');
+      setDescription(task.description ?? '');
       setCategory(task.category);
       setPriority(task.priority);
     }
@@ -46,22 +51,22 @@ export default function TaskDetailScreen({ navigation, route }) {
       Alert.alert('Campo obrigatório', 'O título não pode ficar em branco.');
       return;
     }
-    updateTask({ ...task, title: title.trim(), description: description.trim(), category, priority });
+    updateTask({ ...task!, title: title.trim(), description: description.trim(), category, priority });
     setIsEditing(false);
   }
 
   function handleDelete() {
     Alert.alert('Excluir tarefa', 'Tem certeza? Esta ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Excluir', style: 'destructive', onPress: () => { deleteTask(task.id); navigation.goBack(); } },
+      { text: 'Excluir', style: 'destructive', onPress: () => { deleteTask(task!.id); navigation.goBack(); } },
     ]);
   }
 
   function handleCancel() {
-    setTitle(task.title);
-    setDescription(task.description || '');
-    setCategory(task.category);
-    setPriority(task.priority);
+    setTitle(task!.title);
+    setDescription(task!.description ?? '');
+    setCategory(task!.category);
+    setPriority(task!.priority);
     setIsEditing(false);
   }
 
@@ -69,7 +74,6 @@ export default function TaskDetailScreen({ navigation, route }) {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
@@ -86,7 +90,6 @@ export default function TaskDetailScreen({ navigation, route }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        {/* Status Banner */}
         <TouchableOpacity
           style={[styles.statusBanner, isCompleted ? styles.statusDone : styles.statusPending]}
           onPress={() => toggleStatus(task.id)}
@@ -102,7 +105,6 @@ export default function TaskDetailScreen({ navigation, route }) {
           <Text style={styles.statusTap}>Toque para alternar →</Text>
         </TouchableOpacity>
 
-        {/* Title */}
         <View style={styles.field}>
           <Text style={styles.label}>Título</Text>
           {isEditing ? (
@@ -119,7 +121,6 @@ export default function TaskDetailScreen({ navigation, route }) {
           )}
         </View>
 
-        {/* Description */}
         <View style={styles.field}>
           <Text style={styles.label}>Descrição</Text>
           {isEditing ? (
@@ -141,7 +142,6 @@ export default function TaskDetailScreen({ navigation, route }) {
           )}
         </View>
 
-        {/* Category */}
         <View style={styles.field}>
           <Text style={styles.label}>Categoria</Text>
           {isEditing ? (
@@ -163,7 +163,6 @@ export default function TaskDetailScreen({ navigation, route }) {
           )}
         </View>
 
-        {/* Priority */}
         <View style={styles.field}>
           <Text style={styles.label}>Prioridade</Text>
           {isEditing ? (
@@ -190,11 +189,10 @@ export default function TaskDetailScreen({ navigation, route }) {
           )}
         </View>
 
-        {/* Created At */}
         <View style={styles.field}>
           <Text style={styles.label}>Criada em</Text>
           <Text style={styles.value}>
-            {new Date(task.createdAt).toLocaleDateString('pt-BR', {
+            {new Date(task.createdAt ?? task.created_at ?? '').toLocaleDateString('pt-BR', {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
             })}
           </Text>
@@ -202,7 +200,6 @@ export default function TaskDetailScreen({ navigation, route }) {
 
         <View style={styles.divider} />
 
-        {/* Action Buttons */}
         {isEditing ? (
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>

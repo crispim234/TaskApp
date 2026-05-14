@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, Image, Alert,
+  StyleSheet, Image,
 } from 'react-native';
 import { useTasks } from '../context/TaskContext';
 import TaskItem from '../components/TaskItem';
+import type { HomeScreenProps } from '../types';
 
-const FILTERS = ['Todas', 'Pendentes', 'Concluídas'];
-const CATEGORIES = ['Todas', 'Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'];
+const FILTERS = ['Todas', 'Pendentes', 'Concluídas'] as const;
+const CATEGORIES = ['Todas', 'Estudos', 'Faculdade', 'Saúde', 'Trabalho', 'Pessoal'] as const;
 
-export default function HomeScreen({ navigation }) {
-  const { tasks, toggleStatus, deleteTask, user } = useTasks();
+export default function HomeScreen({ navigation }: HomeScreenProps) {
+  const { tasks, toggleStatus, user } = useTasks();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Todas');
   const [category, setCategory] = useState('Todas');
@@ -42,11 +43,10 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
-  const firstName = user?.user_metadata?.name?.split(' ')[0] || user?.name?.split(' ')[0] || 'Usuário';
+  const firstName = user?.user_metadata?.name?.split(' ')[0] ?? 'Usuário';
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Olá, {firstName} 👋</Text>
@@ -59,7 +59,6 @@ export default function HomeScreen({ navigation }) {
         <Image source={require('../../assets/avatar.png')} style={styles.avatar} />
       </View>
 
-      {/* Summary Cards */}
       <View style={styles.summaryRow}>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryNumber}>{tasks.length}</Text>
@@ -75,7 +74,6 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Search */}
       <View style={styles.searchContainer}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
@@ -92,7 +90,6 @@ export default function HomeScreen({ navigation }) {
         )}
       </View>
 
-      {/* Status Filter */}
       <View style={styles.filtersRow}>
         {FILTERS.map(f => (
           <TouchableOpacity
@@ -105,7 +102,6 @@ export default function HomeScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Category Filter */}
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -122,7 +118,6 @@ export default function HomeScreen({ navigation }) {
         )}
       />
 
-      {/* Task List */}
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
@@ -138,7 +133,6 @@ export default function HomeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* FAB */}
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AddTask')} activeOpacity={0.85}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>

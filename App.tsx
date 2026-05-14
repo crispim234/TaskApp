@@ -12,11 +12,17 @@ import HomeScreen from './src/screens/HomeScreen';
 import AddTaskScreen from './src/screens/AddTaskScreen';
 import TaskDetailScreen from './src/screens/TaskDetailScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import type { RootStackParamList, TabParamList } from './src/types';
 
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
 
-function TabIcon({ label, icon, focused }) {
+interface TabIconProps {
+  icon: string;
+  focused: boolean;
+}
+
+function TabIcon({ icon, focused }: TabIconProps) {
   return (
     <Text style={{ fontSize: focused ? 22 : 20, opacity: focused ? 1 : 0.5 }}>{icon}</Text>
   );

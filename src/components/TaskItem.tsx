@@ -1,12 +1,23 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import type { Task } from '../types';
 
-const PRIORITY_COLORS = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
-const PRIORITY_BG = { Alta: 'rgba(255,71,87,0.12)', Média: 'rgba(255,181,71,0.12)', Baixa: 'rgba(34,197,94,0.12)' };
+interface Props {
+  task: Task;
+  onPress: () => void;
+  onToggle: () => void;
+}
 
-export default function TaskItem({ task, onPress, onToggle }) {
-  const priorityColor = PRIORITY_COLORS[task.priority] || '#8B8FA8';
-  const priorityBg = PRIORITY_BG[task.priority] || 'rgba(139,143,168,0.12)';
+const PRIORITY_COLORS: Record<string, string> = { Alta: '#FF4757', Média: '#FFB547', Baixa: '#22C55E' };
+const PRIORITY_BG: Record<string, string> = {
+  Alta: 'rgba(255,71,87,0.12)',
+  Média: 'rgba(255,181,71,0.12)',
+  Baixa: 'rgba(34,197,94,0.12)',
+};
+
+export default function TaskItem({ task, onPress, onToggle }: Props) {
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? '#8B8FA8';
+  const priorityBg = PRIORITY_BG[task.priority] ?? 'rgba(139,143,168,0.12)';
   const isCompleted = task.status === 'concluído';
 
   return (
@@ -42,7 +53,7 @@ export default function TaskItem({ task, onPress, onToggle }) {
             <Text style={styles.categoryText}>{task.category}</Text>
           </View>
           <Text style={styles.date}>
-            {new Date(task.createdAt).toLocaleDateString('pt-BR')}
+            {new Date(task.createdAt ?? task.created_at ?? '').toLocaleDateString('pt-BR')}
           </Text>
         </View>
       </View>

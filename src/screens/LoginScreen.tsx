@@ -4,8 +4,9 @@ import {
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import { supabase } from '../config/supabase';
+import type { LoginScreenProps } from '../types';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,7 +47,8 @@ export default function LoginScreen({ navigation }) {
       }
       navigation.replace('Main');
     } catch (error) {
-      Alert.alert('Erro', error.message || 'Ocorreu um erro. Tente novamente.');
+      const message = error instanceof Error ? error.message : 'Ocorreu um erro. Tente novamente.';
+      Alert.alert('Erro', message);
     } finally {
       setLoading(false);
     }
